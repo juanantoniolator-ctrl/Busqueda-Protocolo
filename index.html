@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Busqueda de Personas">
+<meta name="theme-color" content="#1a6bbf">
+<title>Búsqueda de Personas — MPF Chaco</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg: #f0f6ff;
+  --bg2: #ffffff;
+  --bg3: #e8f0fb;
+  --border: #ccddf5;
+  --border2: #b0ccea;
+  --text: #1a2f4a;
+  --text2: #2d4a6a;
+  --text3: #5a7a9a;
+  --text4: #8aaac5;
+  --gold: #1a6bbf;
+  --gold-dim: #2980d4;
+  --gold-bg: #ddeeff;
+  --red: #c0392b;
+  --red-bg: #fdf0ef;
+  --red-dim: #e74c3c;
+  --orange: #b45309;
+  --orange-bg: #fef8ec;
+  --blue: #1a6bbf;
+  --blue-bg: #e8f2ff;
+  --green: #15803d;
+  --green-bg: #f0faf4;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #f0f6ff;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+
+/* HEADER */
+.hdr {
+  flex-shrink: 0;
+  padding: 16px 16px 12px;
+  background: linear-gradient(135deg, #1a6bbf 0%, #2980d4 100%);
+  border-bottom: 1px solid #1560a8;
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: max(16px, env(safe-area-inset-top));
+}
+.hdr-eye {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; font-weight: 500;
+  color: rgba(255,255,255,0.75); letter-spacing: .12em; text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.hdr-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px; color: #ffffff;
+  letter-spacing: -.5px; line-height: 1;
+}
+.hdr-sub { font-size: 11px; color: rgba(255,255,255,0.75); margin-top: 3px; }
+.hdr-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; font-weight: 500; letter-spacing: .1em;
+  padding: 6px 10px; border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.4);
+  color: #ffffff; background: rgba(255,255,255,0.15);
+  text-align: center; line-height: 1.4;
+}
+
+/* TABS */
+.tabs-wrap {
+  flex-shrink: 0;
+  background: #f7faff;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto; scrollbar-width: none;
+  display: flex;
+}
+.tabs-wrap::-webkit-scrollbar { display: none; }
+.tab {
+  flex: 0 0 auto;
+  padding: 11px 14px;
+  font-size: 11px; font-weight: 500;
+  color: var(--text4); background: none; border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer; white-space: nowrap;
+  transition: color .15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.tab.on { color: var(--gold); border-bottom-color: var(--gold); }
+
+/* PROGRESS */
+.prog-wrap {
+  flex-shrink: 0;
+  padding: 10px 16px 8px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--border);
+}
+.prog-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.prog-lbl { font-size: 11px; color: var(--text3); }
+.prog-cnt { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--gold); }
+.prog-track { height: 3px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+.prog-fill { height: 100%; background: var(--gold); border-radius: 2px; transition: width .4s ease; width: 0%; }
+
+/* SCROLL BODY */
+.scroll-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 12px 8px;
+  -webkit-overflow-scrolling: touch;
+  background: #f0f6ff;
+}
+
+/* SECTION */
+.sec { margin-bottom: 6px; }
+.sec-hdr {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 12px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer; user-select: none;
+  transition: border-color .15s;
+}
+.sec-hdr.open {
+  border-radius: var(--radius) var(--radius) 0 0;
+  border-bottom-color: transparent;
+}
+.sec-ico { font-size: 16px; flex-shrink: 0; }
+.sec-info { flex: 1; min-width: 0; }
+.sec-name { font-size: 12px; font-weight: 600; color: var(--text); }
+.sec-sub { font-size: 10px; color: var(--text4); margin-top: 1px; }
+.badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px; font-weight: 500; padding: 2px 7px;
+  border-radius: 20px; letter-spacing: .05em; flex-shrink: 0;
+}
+.b-red    { background: var(--red-bg);    color: var(--red);    border: 1px solid var(--red-dim); }
+.b-orange { background: var(--orange-bg); color: var(--orange); border: 1px solid #7c2d12; }
+.b-blue   { background: var(--blue-bg);   color: var(--blue);   border: 1px solid #1e3a5f; }
+.chev { font-size: 12px; color: var(--text4); transition: transform .2s; flex-shrink: 0; }
+.chev.open { transform: rotate(180deg); }
+
+.items-wrap {
+  display: none;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+  overflow: hidden;
+}
+.items-wrap.open { display: block; }
+
+.item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background .1s;
+}
+.item:last-child { border-bottom: none; }
+.item.done { background: rgba(52,211,153,.05); }
+
+.inum { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text4); min-width: 16px; padding-top: 1px; flex-shrink: 0; }
+
+.ibox {
+  width: 18px; height: 18px; flex-shrink: 0;
+  border: 1px solid var(--border2);
+  border-radius: 4px; margin-top: 1px;
+  display: flex; align-items: center; justify-content: center;
+  background: #ffffff;
+  transition: all .12s;
+}
+.ibox.on { background: var(--green-bg); border-color: var(--green); }
+.ibox.on::after {
+  content: '';
+  display: block; width: 4px; height: 8px;
+  border-right: 1.5px solid var(--green);
+  border-bottom: 1.5px solid var(--green);
+  transform: rotate(45deg) translate(-1px,-1px);
+}
+
+.itxt { flex: 1; font-size: 13px; color: var(--text2); line-height: 1.45; }
+.itxt.done { color: var(--text4); text-decoration: line-through; text-decoration-color: var(--border2); }
+.utag {
+  display: inline-block; margin-left: 5px;
+  font-family: 'DM Mono', monospace;
+  font-size: 8px; padding: 1px 5px;
+  border-radius: 3px; vertical-align: middle;
+  background: var(--red-bg); color: var(--red);
+  border: 1px solid var(--red-dim); letter-spacing: .04em;
+}
+
+/* BOTTOM BAR */
+.bottom {
+  flex-shrink: 0;
+  display: flex; gap: 8px;
+  padding: 10px 12px;
+  padding-bottom: max(10px, env(safe-area-inset-bottom));
+  background: #ffffff;
+  border-top: 1px solid var(--border);
+}
+.btn {
+  flex: 1; padding: 11px 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px; font-weight: 500;
+  border-radius: var(--radius-sm);
+  cursor: pointer; border: 1px solid var(--border2);
+  background: var(--bg3); color: var(--text2);
+  transition: all .15s;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.btn:active { opacity: .7; }
+.btn-gold { background: var(--gold-bg); border-color: var(--gold-dim); color: var(--gold); }
+.btn-red  { background: var(--red-bg);  border-color: var(--red-dim);  color: var(--red); }
+
+/* MODAL */
+.modal-bg {
+  display: none;
+  position: fixed; inset: 0; z-index: 999;
+  background: rgba(0,0,0,.7);
+  align-items: flex-end; justify-content: center;
+  padding: 16px;
+}
+.modal-bg.show { display: flex; }
+.modal {
+  background: #ffffff;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 20px 16px 16px;
+  width: 100%; max-width: 380px;
+}
+.modal-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.modal-sub   { font-size: 13px; color: var(--text3); margin-bottom: 16px; line-height: 1.5; }
+.modal-btns  { display: flex; gap: 8px; }
+.modal-cancel {
+  flex: 1; padding: 11px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  border: 1px solid var(--border2); background: var(--bg3); color: var(--text3);
+  font-family: 'DM Sans', sans-serif;
+}
+.modal-ok {
+  flex: 1; padding: 11px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  border: none; background: var(--red); color: #fff;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* EXPORT MENU */
+.export-menu {
+  display: none;
+  position: fixed; inset: 0; z-index: 999;
+  background: rgba(0,0,0,.7);
+  align-items: flex-end; justify-content: center;
+  padding: 16px;
+}
+.export-menu.show { display: flex; }
+.export-panel {
+  background: #ffffff;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  width: 100%; max-width: 380px;
+  overflow: hidden;
+}
+.export-title {
+  padding: 14px 16px;
+  font-size: 13px; font-weight: 600; color: var(--text3);
+  border-bottom: 1px solid var(--border);
+  font-family: 'DM Mono', monospace; letter-spacing: .05em; text-transform: uppercase;
+}
+.export-opt {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer; border-bottom: 1px solid var(--border);
+  transition: background .1s;
+}
+.export-opt:last-child { border-bottom: none; }
+.export-opt:active { background: var(--bg3); }
+.export-ico  { font-size: 22px; flex-shrink: 0; }
+.export-name { font-size: 14px; font-weight: 500; color: var(--text); }
+.export-desc { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.export-cancel {
+  width: 100%; padding: 14px;
+  text-align: center; font-size: 13px; font-weight: 500;
+  color: var(--text3); background: var(--bg3);
+  border: none; border-top: 1px solid var(--border);
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-left" style="display:flex;align-items:center;gap:10px;">
+    <img src="data:image/png;base64,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u9/+5u3XX/1b//7fa5rq0z/5M8vVsgmBkK5rS+qbuspl9diVJz74kY+/70Mf/73f/NXP/uJ/cvXyhY1J9eS7r929u2jbkvpci2xNakEOruMCz5pgbe5XadXnsuyKZq00BpforBEahniatXxGFq8zvAaASTgE4g4vrk0II6kqMApGMVQSN6tmM9R1COIoRdWSIudiXTu3NN+78d3p+cvc2O7Ay5evj8ejvmv/wT/8Lyfj5sc+/TN/+oXPf+xvfPpTP/bZZ7/55//4v/pvc+4m4+Zd73nmgx/95N//5X+ymB/9/m/+81Ly3/37v5xz14zsXe+6tL0zuf/gYDqbushoUk/G9XQUd7bG43FwulNJN2q2LluvpoM7K5t1OaeSfYh9ua8ztU+59ACvueeSGauBqEu2KHBHBhjN3QhXTaSIILkubWUli5iCliLb2f1XvnPt4z975ekfvPO1P/xf/7d/unvzxQf3bn/lS5+/c+O7r73y7PPPffMvvvr5rc3tV19+7nvPf/PB7kuXrzwZ4uhP/uh3QsDyaK9bLacbm08//fTm5riu09PPXE3tskvtxctby+y5dKtVP7q3nNRl8+IIZuqlqiBGM2EFupk6waymBqjRS206MOm1K+8sDZv7slgTLGVTJajjEAr7IEBBdiiQrYRAiheHWbFQJJgBpURfHOWHdw5e++57fvBH7j73Z996/tmp2GNXrz06uLN14eJrr748GtcH+w8P9h9cvPzY3sM7SX3v4W7pu2a86a6T2dZsc1NTuXPrteVWfPJdV689+dTz33lpd/e4TTqbsM+uLrPp6NH+MYJM6tj2KEPilghc1by4BUhNseBFkdX6rDYwrDelPKzzL7nqihFuUIPTrPIqeHDv1FJmMZfg04aByIpSIGMas3sEQWllurj5nT974sMf37n+vv17tz71o5984trjqnl///5kOpuMNw4e7d25deP9H/hI2y2hNp5tBkFVje7fe71v5xcuXRuNp8/95Rf377146cqVEJuvfe2lV248PDjuq2BkljiqQphO4mKe6406FxUGVRS1KgYH3JHNAyCUStxEHADelqc14LSZtn32ICL04gYvlmsxkotkXVLNXjVBC0vxwBAppfZirChEMCm+ah++fuPOK88//SM/cf9733n2ue+++r3vLhfHo6q2ou4Yj0K7XD7YvVfXsYn1wcEeJU4m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" style="width:46px;height:46px;border-radius:10px;flex-shrink:0;" alt="logo">
+    <div>
+      <div class="hdr-eye">Ministerio Público Fiscal</div>
+      <div class="hdr-name">Búsqueda de Personas</div>
+      <div class="hdr-sub">Protocolo de actuación — Chaco</div>
+    </div>
+  </div>
+  <div class="hdr-badge">⚖ MPF</div>
+</div>
+
+<div class="tabs-wrap" id="tabs">
+  <button class="tab on"  onclick="gTab('urgentes',this)">Urgentes</button>
+  <button class="tab"     onclick="gTab('escena',this)">Escena</button>
+  <button class="tab"     onclick="gTab('investigacion',this)">Investigación</button>
+  <button class="tab"     onclick="gTab('digital',this)">Digital</button>
+  <button class="tab"     onclick="gTab('judicial',this)">Judicial</button>
+  <button class="tab"     onclick="gTab('auditoria',this)">Auditoría</button>
+</div>
+
+<div class="prog-wrap">
+  <div class="prog-row">
+    <span class="prog-lbl" id="plbl">Medidas completadas</span>
+    <span class="prog-cnt" id="pcnt">0 / 0</span>
+  </div>
+  <div class="prog-track"><div class="prog-fill" id="pfill"></div></div>
+</div>
+
+<div class="scroll-body" id="body"></div>
+
+<div class="bottom">
+  <button class="btn" onclick="toggleAll()" id="expbtn">↕ Expandir</button>
+  <button class="btn btn-gold" onclick="showExport()">↓ Exportar</button>
+  <button class="btn btn-red"  onclick="askReset()">↺ Limpiar</button>
+</div>
+
+<!-- Modal limpiar -->
+<div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title">Limpiar protocolo</div>
+    <div class="modal-sub">Se van a desmarcar todas las medidas de esta pestaña. ¿Confirmar?</div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="modal-ok"     onclick="doReset()">Limpiar todo</button>
+    </div>
+  </div>
+</div>
+
+<!-- Menú exportar -->
+<div class="export-menu" id="exportMenu" onclick="if(event.target===this)closeExport()">
+  <div class="export-panel">
+    <div class="export-title">Exportar protocolo</div>
+    <div class="export-opt" onclick="exportWord()">
+      <span class="export-ico">📝</span>
+      <div class="export-info">
+        <div class="export-name">Word (.doc)</div>
+        <div class="export-desc">Editable en Microsoft Word y Google Docs</div>
+      </div>
+    </div>
+    <button class="export-cancel" onclick="closeExport()">Cancelar</button>
+  </div>
+</div>
+
+<script>
+const D = {
+  urgentes:{s:[
+    {n:"Primeras acciones — primeras 2 hs",b:"URGENTE",bc:"b-red",ic:"🚨",it:[
+      {t:"Recepcionar denuncia y labrar acta con datos completos del denunciante",u:1},
+      {t:"Determinar fecha y hora exacta de la última vez que fue vista la persona",u:1},
+      {t:"Obtener fotografía o video reciente de la persona buscada",u:1},
+      {t:"Ordenar carga inmediata en SIFCOP",u:1},
+      {t:"Comunicar al SIFEBU — Min. de Seguridad de la Nación (011 5278-9800)",u:1},
+      {t:"Verificar si la persona está detenida: SPF y Servicio Penitenciario Provincial",u:1},
+      {t:"Consultar 911 sobre NN con características similares atendidos recientemente",u:1},
+    ]},
+    {n:"Establecimientos sanitarios y sociales",b:"URGENTE",bc:"b-red",ic:"🏥",it:[
+      {t:"Oficiar a Hospitales, Centros de Salud y Morgues de la jurisdicción",u:1},
+      {t:"Oficiar a Casas de Abrigo — especialmente si es NNyA o adulto mayor",u:1},
+      {t:"Dejar pedido expreso de notificación inmediata si ingresa persona con características similares",u:0},
+      {t:"Consultar organismo competente sobre personas NN halladas en vía pública",u:0},
+    ]},
+    {n:"Difusión y contacto",b:"PRIORITARIO",bc:"b-orange",ic:"📢",it:[
+      {t:"Establecer número de contacto disponible 24 hs para recibir datos del paradero",u:0},
+      {t:"Evaluar pertinencia de difusión de fotografía con autorización escrita de la familia",u:0},
+      {t:"Si se difunde: afiches en lugares frecuentados y último lugar visto",u:0},
+      {t:"Difundir Línea 134 — Ministerio de Seguridad de la Nación",u:0},
+      {t:"ATENCIÓN: si hay hipótesis de secuestro o trata — NO difundir sin evaluar riesgos",u:1},
+    ]},
+  ]},
+  escena:{s:[
+    {n:"Último lugar visto",b:"IRREPRODUCIBLE",bc:"b-red",ic:"📍",it:[
+      {t:"Preservar y delimitar el último lugar donde fue vista la persona",u:1},
+      {t:"Tratar el lugar como escena del crimen potencial",u:1},
+      {t:"Requerir intervención del Gabinete Científico para relevamiento de rastros",u:1},
+      {t:"Solicitar uso de luminol si hay sospecha de violencia en el lugar",u:0},
+      {t:"Solicitar Georadar si hay sospecha de inhumación clandestina",u:0},
+      {t:"Registro fotográfico y croquis completo de la escena",u:1},
+      {t:"Identificar y registrar a todas las personas presentes al momento de la intervención",u:1},
+    ]},
+    {n:"Secuestro de elementos",b:"IRREPRODUCIBLE",bc:"b-red",ic:"🔒",it:[
+      {t:"Secuestrar diarios personales y anotaciones de la persona buscada",u:1},
+      {t:"Secuestrar equipos informáticos con cadena de custodia",u:1},
+      {t:"Secuestrar teléfonos celulares",u:1},
+      {t:"Secuestrar soportes de almacenamiento digital",u:0},
+      {t:"Recolectar elementos para muestras de ADN — cotejo ante eventual hallazgo de cadáver",u:1},
+    ]},
+    {n:"Análisis de cámaras de seguridad",b:"URGENTE",bc:"b-red",ic:"📹",it:[
+      {t:"Relevar INMEDIATAMENTE cámaras en zona de desaparición — públicas y privadas",u:1},
+      {t:"Solicitar resguardo urgente: los registros se borran cada 15 días",u:1},
+      {t:"Requerir imágenes de cámaras municipales por oficio judicial",u:0},
+      {t:"Solicitar imágenes del sistema Tren Alerta si aplica",u:0},
+    ]},
+    {n:"Lugares específicos — NNyA",b:"PRIORITARIO",bc:"b-orange",ic:"👶",it:[
+      {t:"Verificar que NNyA no esté en el propio lugar — puede ser un juego",u:0},
+      {t:"Revisar áreas peligrosas: lavarropas, piletas, pozos, vehículos en desuso",u:0},
+      {t:"En adolescentes: revisar notas en dormitorios, espejos y dispositivos",u:0},
+      {t:"Invitar a la familia a revisar objetos personales y aportar hallazgos",u:0},
+    ]},
+  ]},
+  investigacion:{s:[
+    {n:"Entrevistas a familiares y allegados",b:"URGENTE",bc:"b-red",ic:"🗣",it:[
+      {t:"Tomar entrevistas de forma SEPARADA e individual",u:1},
+      {t:"Realizar entrevistas con presencia de psicólogo o trabajador social",u:0},
+      {t:"Registrar entrevistas en audio",u:1},
+      {t:"Preguntar: ¿Qué cree que pudo haber ocurrido?",u:0},
+      {t:"Preguntar: ¿Hubo hostigamiento o violencia por parte de un tercero?",u:0},
+      {t:"Preguntar: ¿Comentó interés de un tercero hacia ella/él?",u:0},
+      {t:"Preguntar: ¿Tiene deudas, herencias o indemnizaciones pendientes?",u:0},
+      {t:"Preguntar: ¿Realizó transacciones comerciales previas a la desaparición?",u:0},
+      {t:"Relevar incidentes previos en SENAF u Oficina de Violencia Doméstica",u:0},
+      {t:"Consultar comisarías por denuncias previas de merodeo o abuso",u:0},
+    ]},
+    {n:"Recorrido y búsqueda física",b:"PRIORITARIO",bc:"b-orange",ic:"🔍",it:[
+      {t:"Establecer secuencia de lugares probables por orden de prioridad",u:0},
+      {t:"Realizar recorrido con móviles policiales dotados de fotografía de la persona",u:0},
+      {t:"Evaluar participación de familiares en los recorridos",u:0},
+      {t:"Realizar controles vehiculares en rutas y caminos",u:0},
+      {t:"Evaluar uso de canes — activar en primeras horas, preservar área",u:0},
+      {t:"Evaluar sobrevuelo o uso de drones en zonas inaccesibles",u:0},
+      {t:"Si involucra cuerpos de agua: solicitar intervención de Prefectura Naval Argentina",u:0},
+    ]},
+    {n:"Posible viaje",b:"GESTIONAR",bc:"b-blue",ic:"✈",it:[
+      {t:"Determinar si planeaba viajar: tipo de transporte y lugar de abordaje",u:0},
+      {t:"Solicitar a CNRT si adquirió pasaje de micro de larga distancia",u:0},
+      {t:"Solicitar a empresas aéreas si compró pasaje",u:0},
+      {t:"Consultar Migraciones vía FISCALNET si salió del país",u:0},
+      {t:"Si hay hipótesis de salida del país: activar Alerta Amarilla — Interpol",u:0},
+    ]},
+    {n:"Herramientas federales y forenses",b:"GESTIONAR",bc:"b-blue",ic:"🔬",it:[
+      {t:"Solicitar cotejo dactiloscópico vía SIBIOS/AFIS — Chaco tiene acceso directo online",u:0},
+      {t:"Solicitar reconocimiento facial mediante sistema Morpho Face — SIBIOS",u:0},
+      {t:"Consultar registros dentales con odontólogo de cabecera — confronte con NN",u:0},
+      {t:"Solicitar autopsia psicológica si la investigación avanza sin resultado",u:0},
+      {t:"Evaluar progresión de imagen si pasó tiempo considerable",u:0},
+      {t:"Si hay hipótesis de cadáver: búsqueda en vertederos con antropólogos forenses",u:0},
+    ]},
+  ]},
+  digital:{s:[
+    {n:"Investigación telefónica",b:"URGENTE",bc:"b-red",ic:"📱",it:[
+      {t:"Requerir tráfico de llamadas y mensajes a empresa telefónica — impreso Y digital",u:1},
+      {t:"Solicitar datos de antenas de impacto para reconstruir geolocalización",u:1},
+      {t:"Solicitar número de IMEI del dispositivo de la persona buscada",u:1},
+      {t:"Cruzar IMEI con otros chips: ¿fue usado con otra línea?",u:0},
+      {t:"Consultar a todas las empresas si el IMEI impactó en sus redes",u:0},
+      {t:"DATO VOLÁTIL: antenas sin plazo legal de conservación — medida inmediata",u:1},
+    ]},
+    {n:"Extracción forense de dispositivos",b:"IRREPRODUCIBLE",bc:"b-red",ic:"💻",it:[
+      {t:"Requerir extracción forense al Gabinete Científico de la fuerza interviniente",u:1},
+      {t:"Si no hay tecnología local: solicitar al SIFEBU herramientas forenses",u:0},
+      {t:"Extraer: llamadas, SMS, historial borrado, contactos, fotos y videos",u:0},
+      {t:"Extraer: mensajes de redes sociales, chats de apps, geoetiquetas de fotos",u:0},
+      {t:"Verificar si el equipo tiene credenciales guardadas para servicios en la nube",u:0},
+    ]},
+    {n:"Redes sociales",b:"URGENTE",bc:"b-red",ic:"🌐",it:[
+      {t:"Consultar a familiares si tienen usuario y contraseña de las cuentas",u:1},
+      {t:"Documentar URL e ID de usuario de todos los perfiles identificados",u:1},
+      {t:"Analizar publicaciones y estados de ánimo previos a la desaparición",u:0},
+      {t:"Verificar nuevas solicitudes de amistad, contactos y etiquetas en fotos",u:0},
+      {t:"Solicitar a la empresa preservación de datos por 90 días",u:1},
+      {t:"Información básica del suscriptor: por oficio judicial firmado",u:0},
+      {t:"Contenido de mensajes privados: requiere exhorto internacional",u:0},
+      {t:"Incluir en el oficio: SE ORDENA MANTENER CONFIDENCIALIDAD DEL REQUERIMIENTO",u:1},
+      {t:"Si es NNyA: destacarlo — empresas dan prioridad y responden más rápido",u:0},
+    ]},
+    {n:"Correo electrónico e internet",b:"PRIORITARIO",bc:"b-orange",ic:"📧",it:[
+      {t:"Identificar cuentas de correo electrónico utilizadas por la persona buscada",u:0},
+      {t:"Solicitar a familiares si conocen contraseñas o están guardadas en dispositivos",u:0},
+      {t:"Notificar a autoridad judicial para habilitar acceso a casilla de mail",u:0},
+      {t:"Solicitar a empresa de correo: registros de conexión con IP, fecha, hora y huso horario",u:0},
+      {t:"Verificar rastreo por WiFi: solicitar IPs de conexión a proveedores de internet",u:0},
+    ]},
+  ]},
+  judicial:{s:[
+    {n:"Medidas sobre telecomunicaciones",b:"URGENTE",bc:"b-red",ic:"📡",it:[
+      {t:"Solicitar intervención y escucha de líneas de interés — Dirección de Captación de Comunicaciones PJN",u:1},
+      {t:"Autorizar entrecruzamiento de llamadas con sistema I2 — solicitar a SIFEBU si no hay local",u:0},
+    ]},
+    {n:"Allanamientos y requisas",b:"PRIORITARIO",bc:"b-orange",ic:"🏠",it:[
+      {t:"Allanamiento de vivienda si la persona vive sola — previa consigna policial y cadena de custodia",u:0},
+      {t:"Allanamiento de domicilios vinculados a hipótesis de captación o secuestro",u:0},
+      {t:"Solicitar presencia de peritos en rastros, fotografía y planimetría",u:0},
+      {t:"Incorporar perito químico si se sospecha violencia en el lugar",u:0},
+    ]},
+    {n:"Consultas a organismos",b:"GESTIONAR",bc:"b-blue",ic:"🏛",it:[
+      {t:"RENAPER: cambios de DNI, cambios de domicilio, huellas dactilares",u:0},
+      {t:"ANSES: movimientos de subsidios posteriores a la desaparición",u:0},
+      {t:"AFIP: aportes laborales registrados con posterioridad a la desaparición",u:0},
+      {t:"Banco Central: movimientos bancarios de la persona buscada",u:0},
+      {t:"Red Banelco / Red Link: activar alerta de tarjeta de débito",u:0},
+      {t:"SUBE / boleto electrónico Chaco: historial de movimientos",u:0},
+      {t:"Migraciones vía FISCALNET: verificar salidas del país",u:0},
+      {t:"Ministerio de Educación: si es sustracción parental — escolarización en otro distrito",u:0},
+      {t:"CNRT: consulta a cámaras de transporte de larga distancia si planeaba viajar",u:0},
+    ]},
+    {n:"Búsqueda internacional",b:"GESTIONAR",bc:"b-blue",ic:"🌍",it:[
+      {t:"Activar Alerta Amarilla — Interpol si hay hipótesis de salida del país",u:0},
+      {t:"Exhorto internacional para obtener contenido de cuentas en empresas extranjeras",u:0},
+      {t:"Identificar previamente en qué país están alojados los datos antes de enviar exhorto",u:0},
+    ]},
+  ]},
+  auditoria:{s:[
+    {n:"FISCAL — Verificación",b:"URGENTE",bc:"b-red",ic:"👨‍⚖️",it:[
+      {t:"¿Se presumió privación de libertad y vida desde el inicio del caso?",u:1},
+      {t:"¿Se aseguró toda la evidencia irreproducible — cámaras, antenas, rastros?",u:1},
+      {t:"¿Se solicitaron todas las medidas judiciales necesarias?",u:1},
+      {t:"¿Se preservó la escena correctamente como escena del crimen potencial?",u:1},
+      {t:"¿Se ordenó preservación de datos digitales a tiempo?",u:1},
+      {t:"¿Se evaluó hipótesis de trata y se activó protocolo específico si corresponde?",u:1},
+      {t:"¿Se coordinó con el magistrado la pertinencia de difusión pública?",u:0},
+    ]},
+    {n:"SECRETARIO — Verificación",b:"PRIORITARIO",bc:"b-orange",ic:"📋",it:[
+      {t:"¿Están labradas todas las actas de secuestro con cadena de custodia?",u:0},
+      {t:"¿Cadena de custodia documentada en cada elemento secuestrado?",u:1},
+      {t:"¿Testigos identificados e individualizados con datos completos?",u:0},
+      {t:"¿Oficios enviados a SIFCOP, RENAPER, ANSES, AFIP, Migraciones?",u:0},
+      {t:"¿Oficios enviados a empresas telefónicas con cláusula de confidencialidad?",u:1},
+      {t:"¿Oficios enviados a Hospitales, Morgues y Casas de Abrigo?",u:0},
+    ]},
+    {n:"AYUDANTE — Verificación",b:"GESTIONAR",bc:"b-blue",ic:"🗂",it:[
+      {t:"¿Evidencia digital preservada y embalada correctamente?",u:0},
+      {t:"¿Elementos para ADN recolectados y rotulados?",u:1},
+      {t:"¿Redes sociales documentadas con URL e ID de usuario?",u:0},
+      {t:"¿Fotografías y videos recientes de la persona obtenidos?",u:0},
+      {t:"¿Preservación de datos solicitada a empresas de redes sociales — 90 días?",u:0},
+      {t:"¿Entrevistas grabadas en audio con datos de los testigos?",u:0},
+    ]},
+    {n:"Advertencias procesales",b:"URGENTE",bc:"b-red",ic:"⚠️",it:[
+      {t:"VOLATILIDAD: cámaras y antenas no tienen plazo legal — actuar sin demora",u:1},
+      {t:"CONFIDENCIALIDAD: incluir cláusula en todos los oficios a empresas tecnológicas",u:1},
+      {t:"TRATA: si hay indicador activar Protocolo Específico — no continuar solo con este",u:1},
+      {t:"NNyA: toda diligencia con menores requiere psicólogo y Cámara Gesell",u:1},
+      {t:"CHACO: Provincia adherida a SIBIOS/AFIS — usar acceso directo para cotejos dactiloscópicos",u:0},
+    ]},
+  ]},
+};
+
+const NOMBRES = {
+  urgentes:      "Medidas Urgentes",
+  escena:        "Escena del Hecho",
+  investigacion: "Investigación",
+  digital:       "Digital y Tecnología",
+  judicial:      "Medidas Judiciales",
+  auditoria:     "Auditoría Final"
+};
+
+let tab = 'urgentes';
+let ck = {};
+let expanded = false;
+
+function k(t,s,i){ return t+'|'+s+'|'+i; }
+
+function gTab(t, btn){
+  tab = t; expanded = false;
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('expbtn').textContent = '↕ Expandir';
+  closeModal(); closeExport();
+  render(); prog();
+}
+
+function render(){
+  const secs = D[tab].s;
+  const body = document.getElementById('body');
+  body.innerHTML = '';
+  secs.forEach((sec, si) => {
+    const sid = tab+'_'+si;
+    const isFirst = si === 0;
+    const wrap = document.createElement('div');
+    wrap.className = 'sec';
+
+    const hdr = document.createElement('div');
+    hdr.className = 'sec-hdr' + (isFirst ? ' open' : '');
+    hdr.id = 'h_'+sid;
+    hdr.onclick = () => toggleSec(sid);
+    hdr.innerHTML =
+      '<span class="sec-ico">'+sec.ic+'</span>'+
+      '<div class="sec-info">'+
+        '<div class="sec-name">'+sec.n+'</div>'+
+        '<div class="sec-sub">'+sec.it.length+' medidas</div>'+
+      '</div>'+
+      '<span class="badge '+sec.bc+'">'+sec.b+'</span>'+
+      '<span class="chev'+(isFirst?' open':'')+ '" id="c_'+sid+'">▾</span>';
+
+    const iw = document.createElement('div');
+    iw.className = 'items-wrap' + (isFirst ? ' open' : '');
+    iw.id = 'iw_'+sid;
+
+    sec.it.forEach((item, ii) => {
+      const key = k(tab, si, ii);
+      const done = !!ck[key];
+      const row = document.createElement('div');
+      row.className = 'item' + (done ? ' done' : '');
+      row.id = 'r_'+key;
+      row.onclick = () => toggle(tab, si, ii);
+      row.innerHTML =
+        '<span class="inum">'+(ii+1)+'</span>'+
+        '<div class="ibox'+(done?' on':'')+'" id="b_'+key+'"></div>'+
+        '<span class="itxt'+(done?' done':'')+'" id="t_'+key+'">'+
+          item.t+(item.u ? '<span class="utag">URGENTE</span>' : '')+
+        '</span>';
+      iw.appendChild(row);
+    });
+
+    wrap.appendChild(hdr);
+    wrap.appendChild(iw);
+    body.appendChild(wrap);
+  });
+}
+
+function toggleSec(sid){
+  const iw   = document.getElementById('iw_'+sid);
+  const hdr  = document.getElementById('h_'+sid);
+  const chev = document.getElementById('c_'+sid);
+  const open = iw.classList.contains('open');
+  iw.classList.toggle('open', !open);
+  hdr.classList.toggle('open', !open);
+  chev.classList.toggle('open', !open);
+}
+
+function toggle(t, s, i){
+  const key = k(t, s, i);
+  ck[key] = !ck[key];
+  const box = document.getElementById('b_'+key);
+  const txt = document.getElementById('t_'+key);
+  const row = document.getElementById('r_'+key);
+  if(box) box.classList.toggle('on', !!ck[key]);
+  if(txt) txt.classList.toggle('done', !!ck[key]);
+  if(row) row.classList.toggle('done', !!ck[key]);
+  prog();
+}
+
+function prog(){
+  const secs = D[tab].s;
+  let tot = 0, done = 0;
+  secs.forEach((s,si) => s.it.forEach((_,ii) => { tot++; if(ck[k(tab,si,ii)]) done++; }));
+  document.getElementById('pcnt').textContent = done + ' / ' + tot;
+  const pct = tot > 0 ? Math.round((done/tot)*100) : 0;
+  document.getElementById('pfill').style.width = pct + '%';
+  document.getElementById('plbl').textContent = pct === 100 ? '✓ Protocolo completo' : 'Medidas completadas';
+}
+
+function toggleAll(){
+  expanded = !expanded;
+  document.querySelectorAll('.items-wrap').forEach(el => el.classList.toggle('open', expanded));
+  document.querySelectorAll('.sec-hdr').forEach(el => el.classList.toggle('open', expanded));
+  document.querySelectorAll('.chev').forEach(el => el.classList.toggle('open', expanded));
+  document.getElementById('expbtn').textContent = expanded ? '↕ Colapsar' : '↕ Expandir';
+}
+
+function askReset(){ document.getElementById('modal').classList.add('show'); }
+function closeModal(){ document.getElementById('modal').classList.remove('show'); }
+function doReset(){
+  closeModal();
+  D[tab].s.forEach((s,si) => s.it.forEach((_,ii) => { ck[k(tab,si,ii)] = false; }));
+  render(); prog();
+}
+
+function showExport(){ document.getElementById('exportMenu').classList.add('show'); }
+function closeExport(){ document.getElementById('exportMenu').classList.remove('show'); }
+
+function exportWord(){
+  closeExport();
+  const secs   = D[tab].s;
+  const nombre = NOMBRES[tab];
+  const fecha  = new Date().toLocaleDateString('es-AR');
+  let filas = '';
+  secs.forEach(function(sec, si){
+    var bc = {'URGENTE':'#a32d2d','IRREPRODUCIBLE':'#a32d2d','PRIORITARIO':'#7a4500','GESTIONAR':'#185fa5'}[sec.b]||'#185fa5';
+    filas += '<h2 style="font-size:13pt;color:#185fa5;border-left:4px solid #185fa5;padding-left:8px;margin:14px 0 4px;">'+sec.ic+' '+sec.n+' <span style="font-size:8pt;color:'+bc+';">['+sec.b+']</span></h2>';
+    sec.it.forEach(function(item, ii){
+      var done   = !!ck[k(tab,si,ii)];
+      var check  = done ? '[X]' : '[  ]';
+      var estilo = done ? 'color:#888;text-decoration:line-through;' : 'color:#2d4a6a;';
+      var urg    = item.u ? ' <span style="font-size:8pt;color:#a32d2d;font-weight:bold;">[URGENTE]</span>' : '';
+      filas += '<p style="margin:3px 0 3px 12px;font-size:10.5pt;'+estilo+'">'+check+' '+(ii+1)+'. '+item.t+urg+'</p>';
+    });
+  });
+  var contenido = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;font-size:11pt;color:#1a2f4a;margin:2cm;}h1{font-size:18pt;color:#0c2340;}h2{font-size:13pt;}p{margin:3px 0;}.meta{background:#f0f6ff;padding:8px 12px;margin:10px 0 16px;font-size:9.5pt;}</style></head><body><h1>Busqueda de Personas - Protocolo de Actuacion</h1><p style="color:#5a7a9a;font-size:9pt;">Ministerio Publico Fiscal - Provincia del Chaco</p><div class="meta"><b>Modulo:</b> '+nombre+' | <b>Fecha:</b> '+fecha+'</div>'+filas+'<p style="margin-top:20px;font-size:8pt;color:#999;">Uso exclusivo del Equipo Fiscal - MPF Chaco</p></body></html>';
+  var w = window.open('','_blank');
+  if(w){ w.document.write(contenido); w.document.close(); }
+  else { alert('Para exportar: permitir ventanas emergentes en el navegador.'); }
+}
+
+render();
+prog();
+</script>
+</body>
+</html>
